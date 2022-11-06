@@ -96,6 +96,4 @@ for id_code in code_lang:
 data = pd.read_csv(r'youtube-comments.csv',
                  lineterminator='\n')
 
-#asagidaki_kodu_calisiyor_mu_diye_kontrol_etmek_gerekir
-result.to_csv("output.csv", index=False)
 
