@@ -97,3 +97,45 @@ data = pd.read_csv(r'youtube-comments.csv',
                  lineterminator='\n')
 
 
+#Bu noktadan sonra R'ye gecilecek
+
+options(scipen = 999)
+library(tidyverse)
+library(jsonlite)
+library(tidytext)
+library(data.table)
+library(dplyr)
+library(ggplot2)
+
+
+#EXTRACT EDILMIS DATA FRAME ICINDEN TWEET'LERI CEKMEK
+#sonradan eslenebileek sekilde id iceren tweetler
+myvars <- c("Comment")
+sadece_comments <- youtube.comments[myvars]
+
+
+#sentimental analiz
+
+lexicon <- read.table("/Users/user/Downloads/custom_lexicon_ortak.csv",
+                      header = TRUE,
+                      sep = ';',
+                      encoding = "UTF-8", 
+                      stringsAsFactors = FALSE)
+
+lexicon2 <- lexicon %>% 
+  select(c("WORD","TONE")) %>% 
+  rename('word'="WORD",'value'="TONE")
+
+
+#kelimeleri puanlamak
+sadece_comments %>%
+  mutate(linenumber = row_number()) %>% #line number for later sentence grouping 
+  unnest_tokens(word, `Comment`) %>% #tokenization - sentence to words
+  inner_join(lexicon2) %>% # inner join with our lexicon to get the polarity score
+  group_by(linenumber) %>% #group by for sentence polarity
+  summarise(sentiment = sum(value)) %>% # final sentence polarity from words
+  left_join(
+    sadece_comments %>%
+      mutate(linenumber = row_number()) #get the actual text next to the sentiment value
+  ) %>% write.csv("sentiment_output.csv",row.names = FALSE)
+  #Dosya muhtemelen Documents folderinda olusmustur. 
